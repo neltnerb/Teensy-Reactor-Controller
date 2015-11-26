@@ -77,6 +77,9 @@ void loop() {
   while (Serial.available() > 0) {
     char incomingByte = Serial.read();
     
+    // Echo the character back to the sender.
+    Serial.write(incomingByte);
+    
     // If the byte is a carriage return, then send the command previously read to evaluateCommand()
     // and clear the commandstring buffer.
     if (incomingByte == 0x0D) {
