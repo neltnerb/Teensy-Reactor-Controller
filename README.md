@@ -24,9 +24,11 @@ I recommend having these at the bottom of the code and to use a formal prototype
 ### registerCommand(String name, name);
 
 In the setup section, you must register each command with (for example):
+
     registerCommand("CommandName", commandname)
    
 with previously defined:
+
     command(commandname) { };
 
 This automatically adds the new Command to a vector of Commands. This is your command registry, and is automatically searched for a match to a command name when you run
@@ -40,7 +42,8 @@ with a received string you want to parse. On a match, evaluateCommand() automati
 Takes a given commandstring and passes it to the parser to search for a matching registered command and if there is a match to run the registered function.
 
 My recommendation is to use this with:
-if (Serial.available()) evaluateCommand(Serial.readStringUntil(0x0D));
+
+    if (Serial.available()) evaluateCommand(Serial.readStringUntil(0x0D));
 
 to tell it to automatically keep filling up the command until it reads a carriage return for a termination character. I have found that in practice this is vastly faster than doing manual byte manipulations.
 
