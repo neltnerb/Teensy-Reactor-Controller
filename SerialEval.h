@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <vector>
 
-// expects argc and argv to be present
+// Expects argv to be present, handled by the command macro when defining a command.
 #define floatArg(i, var_ptr)  do { if (-1 == _parse_float(argv, i, var_ptr)) return; } while (0)
 #define intArg(i, var_ptr)  do { if (-1 == _parse_int(argv, i, var_ptr)) return; } while (0)
 #define stringArg(i, var_ptr)  do { if (-1 == _parse_string(argv, i, var_ptr)) return; } while (0)
