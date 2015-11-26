@@ -88,6 +88,7 @@ void loop() {
   // Then if you want to do time based stuff, check the elapsed time:
   if (elapsed > 5000) {
     digitalWrite(6, LOW);
+    elapsed =- 5000;
   }
 
   // The reason for doing time based stuff like this rather than just with a function like:
