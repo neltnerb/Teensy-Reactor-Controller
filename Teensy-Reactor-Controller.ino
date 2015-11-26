@@ -11,6 +11,8 @@
  */
 
 #include <Arduino.h>
+#include <elapsedMillis.h>
+#include <vector>
 #include "SerialEval.h"
 
 // PurgePin is an output attached to the solenoid valve.
@@ -58,6 +60,12 @@ void setup() {
 
 elapsedMillis elapsed;
 
+// For now, I'm going to try using a vector of chars instead of a std::string to see if it
+// works well. Doing this using String objects and concatenate causes reliability
+// issues for unclear reasons, but possibly too much overhead.
+
+std::vector<char> commandstring;
+
 void loop() {
   // This checks for serial commands and sends them for evaluation when a carriage return comes in.
   // evaluateCommand() expects a string to parse, which it will do by splitting at every space. As such,
@@ -66,7 +74,27 @@ void loop() {
   // is probably not what you want. This formulation below ends strings with a carriage return, character
   // code 0x0D.
   
-  if (Serial.available()) evaluateCommand(Serial.readStringUntil(0x0D));
+  while (Serial.available() > 0) {
+    char incomingByte = Serial.read();
+    
+    // If the byte is a carriage return, then send the command previously read to evaluateCommand()
+    // and clear the commandstring buffer.
+    if (incomingByte == 0x0D) {
+      commandstring.push_back('\0');
+      evaluateCommand(commandstring.data());
+      commandstring.clear();
+    }
+
+    // If the byte is a backspace, remove the previously appended char if the length is non-zero.
+    else if (incomingByte == 0x08) {
+      if (commandstring.size() > 0) commandstring.pop_back();
+    }
+    
+    // If the byte is not a carriage return, put it onto the commandstring.
+    else {
+      commandstring.push_back(incomingByte);
+    }
+  }
 
   // The main loop should check for any flags, and do any actions which should be done based on time delays.
   // For instance, here I'm checking for the StartPinFlag which tells me if I should run something based on

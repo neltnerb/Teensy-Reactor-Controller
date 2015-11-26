@@ -25,10 +25,20 @@ struct Command {
 std::vector<Command> CommandVector;
 
 void evaluateCommand(String commandstring) {
+  // If commandstring is empty, return without doing anything. No point in
+  // evaluating an empty command.
+  
+  if (commandstring.length() == 0) return;
+  
   std::vector<String> parsed_argv;
 
   // Get the index of the first space. This should be after the command name.
   int spaceIndex = commandstring.indexOf(' ');
+
+  // If there's no spaces, the full string is just the command.
+  if (spaceIndex == -1) {
+    parsed_argv.push_back(commandstring);
+  }
 
   // Until there are no more spaces, keep adding the char* from the commandstring
   // as new elements of the char* vector parsed_argv.
@@ -37,10 +47,6 @@ void evaluateCommand(String commandstring) {
     commandstring = commandstring.substring(spaceIndex + 1);
     spaceIndex = commandstring.indexOf(' ');
   }
-
-  // If there was no command string at all (i.e. just a carriage return with no command)
-  // return without trying to parse it.
-  if (parsed_argv.size() == 0) return;
 
   // After parsing the string into parsed_argv, search the CommandVector of registered
   // commands for a match between the Command name and the argv[0] string.
