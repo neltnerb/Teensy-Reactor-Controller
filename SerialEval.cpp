@@ -34,6 +34,7 @@ void evaluateCommand(String commandstring) {
   // as new elements of the char* vector parsed_argv.
   while (spaceIndex != -1) {
     parsed_argv.push_back(commandstring.substring(0, spaceIndex));
+    commandstring = commandstring.substring(spaceIndex + 1);
     spaceIndex = commandstring.indexOf(' ');
   }
 
