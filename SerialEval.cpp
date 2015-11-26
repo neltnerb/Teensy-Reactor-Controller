@@ -42,6 +42,8 @@ void evaluateCommand(String commandstring) {
   // return without trying to parse it.
   if (parsed_argv.size() == 0) return;
 
+  // After parsing the string into parsed_argv, search the CommandVector of registered
+  // commands for a match between the Command name and the argv[0] string.
   for (unsigned int i=0; i<CommandVector.size(); i++) {
     if (CommandVector[i].name == parsed_argv[0]) {
       CommandVector[i].handler(parsed_argv);
