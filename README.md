@@ -118,7 +118,11 @@ I use here a char vector instead of String to make it faster and give access to 
 
 The above recommended routine also has the advantage of allowing for either newline or carriage returns as a termination character, frequently a point of contention when using LabView or other very high level GUI systems, and allows for you to use backspace to delete typed characters. The test against 0x20 and 0x7E tells it to only store "normal" characters.
 
-If you send the special serial command "ListCommands" it will print back a list of all registered commands along with the descriptions provided when registering. For instance, in the above it would print:
+If you send the special serial command "ListCommands" it will print back a list of all registered commands along with the descriptions provided when registering. For instance, in you had registered CommandName with:
+
+    registerCommand("CommandName", commandname, "Does a commanding Thing")
+
+sending ListCommands over serial would print:
 
     ListCommands
     CommandName - Does a commanding Thing
