@@ -19,6 +19,7 @@ namespace std {
 
 struct Command {
   String name;
+  String description;
   handler_t *handler;
 };
 
@@ -35,11 +36,6 @@ void evaluateCommand(String commandstring) {
   // Get the index of the first space. This should be after the command name.
   int spaceIndex = commandstring.indexOf(' ');
 
-  // If there's no spaces, the full string is just the command.
-  if (spaceIndex == -1) {
-    parsed_argv.push_back(commandstring);
-  }
-
   // Until there are no more spaces, keep adding the char* from the commandstring
   // as new elements of the char* vector parsed_argv.
   while (spaceIndex != -1) {
@@ -48,19 +44,44 @@ void evaluateCommand(String commandstring) {
     spaceIndex = commandstring.indexOf(' ');
   }
 
+  // This either pushes the very last portion of the command into the final argv,
+  // or in the case where there were no spaces in the command just puts the full
+  // command into argv[0].
+  
+  parsed_argv.push_back(commandstring);
+
+  // Flag to identify if the command was handled.
+  
+  boolean CommandHandled = false;
+
   // After parsing the string into parsed_argv, search the CommandVector of registered
-  // commands for a match between the Command name and the argv[0] string.
-  for (unsigned int i=0; i<CommandVector.size(); i++) {
-    if (CommandVector[i].name == parsed_argv[0]) {
-      CommandVector[i].handler(parsed_argv);
+  // commands for a match between the Command name and the argv[0] string. First check
+  // for the special command "ListCommands".
+  
+  if (parsed_argv[0] == "ListCommands") {
+    for (unsigned int i=0; i<CommandVector.size(); i++) {
+      Serial.println(CommandVector[i].name + " - " + CommandVector[i].description);
+      CommandHandled = true;
     }
   }
+  
+  else {
+    for (unsigned int i=0; i<CommandVector.size(); i++) {
+      if (CommandVector[i].name == parsed_argv[0]) {
+        CommandVector[i].handler(parsed_argv);
+        CommandHandled = true;
+      }
+    }
+  }
+  
+  if (!CommandHandled) Serial.println("ERROR: No such command - " + parsed_argv[0]);
 }
 
-void registerCommand(String name, handler_t *handler) {
+void registerCommand(String name, handler_t *handler, String description) {
   Command newCommand;
   newCommand.name = name;
   newCommand.handler = handler;
+  newCommand.description = description;
   CommandVector.push_back(newCommand);
 }
 

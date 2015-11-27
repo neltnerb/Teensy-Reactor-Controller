@@ -55,7 +55,8 @@ void setup() {
   attachInterrupt(StartPin, StartPinInterrupt, CHANGE);
 
   // Register the commands created to attach running the function with receiving a starting string over USB Serial.
-  registerCommand("SetPurge", setPurge);
+  // Third argument is a description to be displayed when you send the command ListCommands.
+  registerCommand("SetPurge", setPurge, "Set Purge Valve State (0/1)");
 }
 
 elapsedMillis elapsed;
@@ -77,25 +78,41 @@ void loop() {
   while (Serial.available() > 0) {
     char incomingByte = Serial.read();
     
-    // Echo the character back to the sender.
-    Serial.write(incomingByte);
+    // If the byte is a carriage return or newline (since I can't guarantee which if either will come
+    // first), then send the command previously read to evaluateCommand() and clear the commandstring
+    // buffer. This has the convenient effect of rendering irrelevant whether LabView or other such
+    // GUI sends something reasonable for a termination character, as long as it sends *something*.
     
-    // If the byte is a carriage return, then send the command previously read to evaluateCommand()
-    // and clear the commandstring buffer.
-    if (incomingByte == 0x0D) {
-      commandstring.push_back('\0');
-      evaluateCommand(commandstring.data());
+    if ((incomingByte == 0x0D) || (incomingByte == 0x0A)) {
+
+      // This tests that there's a string to return in the buffer. If not, ignore. This is both
+      // to avoid testing when it's an empty command, and also to deal with sequential CR/NL that
+      // can happen with some GUIs sending serial data.
+      
+      if (commandstring.size() != 0) {
+        // Append the termination character to the command string.
+        commandstring.push_back('\0');
+  
+        // Write a newline to clean up echoing.
+        Serial.write(0x0D);
+        Serial.write(0x0A);
+  
+        // Evaluate the data.
+        evaluateCommand(commandstring.data());
+      }
       commandstring.clear();
     }
 
     // If the byte is a backspace, remove the previously appended char if the length is non-zero.
-    else if (incomingByte == 0x08) {
+    else if (incomingByte == 0x7F) {
       if (commandstring.size() > 0) commandstring.pop_back();
+      Serial.write(0x7F);
     }
     
-    // If the byte is not a carriage return, put it onto the commandstring.
-    else {
+    // If the byte is not a carriage return, and is a normal ASCII character, put it onto the commandstring.
+    else if ((incomingByte >= 0x20) && (incomingByte <=0x7E)) {
       commandstring.push_back(incomingByte);
+      Serial.write(incomingByte);
     }
   }
 
@@ -138,7 +155,10 @@ void loop() {
 command(setPurge) {
   // A quick check that the number of arguments received is correct.
   // Does not include the command name in the number of arguments.
-  if (numArgs() != 1) return;
+  if (numArgs() != 1) {
+    Serial.println("ERROR: SetPurge expects 1 argument, received " + String(numArgs()) + ".");
+    return;
+  }
   
   // Create a place to put the argument into a real value.
   int PurgeValveState;
@@ -153,10 +173,16 @@ command(setPurge) {
   intArg(1, &PurgeValveState);
 
   // Based on the argument to the Serial command, change the ValvePin output.
-  if (PurgeValveState == 0) digitalWrite(PurgePin, LOW);
-  else if (PurgeValveState == 1) digitalWrite(PurgePin, HIGH);
+  if (PurgeValveState == 0) {
+    digitalWrite(PurgePin, LOW);
+    Serial.println("Purge valve set to OFF.");
+  }
+  else if (PurgeValveState == 1) {
+    digitalWrite(PurgePin, HIGH);
+    Serial.println("Purge valve set to ON.");
+  }
 
   // and if the argument isn't 0 or 1, return an error.
-  else Serial.println("Purge Valve State Invalid (must be 0 or 1).");
+  else Serial.println("ERROR: Purge valve state invalid (must be 0 or 1).");
 }
 
