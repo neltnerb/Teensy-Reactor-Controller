@@ -105,8 +105,10 @@ void loop() {
 
     // If the byte is a backspace, remove the previously appended char if the length is non-zero.
     else if (incomingByte == 0x7F) {
-      if (commandstring.size() > 0) commandstring.pop_back();
-      Serial.write(0x7F);
+      if (commandstring.size() > 0) {
+        commandstring.pop_back();
+        Serial.write(0x7F);
+      }
     }
     
     // If the byte is not a carriage return, and is a normal ASCII character, put it onto the commandstring.
