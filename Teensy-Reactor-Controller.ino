@@ -21,6 +21,10 @@
 // StartPin is an input attached to an external start signal and attached to an interrupt to detect the rising edge.
 #define StartPin 4
 
+// TriggeredPin is an output that is set high when the StartPin is triggered and goes low after some delay.
+#define TriggeredPin 6
+#define TriggeredPinDelay 5000
+
 // Prototypes for the commands.
 command(setPurge);
 
@@ -64,11 +68,12 @@ elapsedMillis elapsed;
 void loop() {
   // This checks for serial commands and sends them for evaluation when a carriage return or newline comes in.
   //
-  // checkSerial() expects a string to parse, which it will do by splitting at every space. As such,
-  // like with UNIX, you cannot have a command with a space in it. Something like:
-  // "Purge Valve 0" would be read as the command "Purge" followed by arguments "Valve" and "0" which
-  // is probably not what you want. This formulation below ends strings with a carriage return, character
-  // code 0x0D.
+  // checkSerial() automatically reads strings from the USB Serial interface by splitting at every space.
+  // As such, as with UNIX, you cannot have a command with a space in it. Something like "Purge Valve 0"
+  // would be read as the command "Purge" followed by arguments "Valve" and "0" which is probably not what
+  // you want. checkSerial() automatically searches the registered functions on receiving either a carriage
+  // return OR a newline character to make it a little more likely to work with high level GUIs like LabView
+  // where it's often really annoying or obfuscated how to send a specific singular termination character.
   
   checkSerial();
 
@@ -86,13 +91,13 @@ void loop() {
     
     // which assumes a globally defined elapsedMillis named elapsed, or
     // setting some pin:
-    digitalWrite(6, HIGH);
+    digitalWrite(TriggeredPin, HIGH);
   }
 
-  // Then if you want to do time based stuff, check the elapsed time:
-  if (elapsed > 5000) {
-    digitalWrite(6, LOW);
-    elapsed =- 5000;
+  // This example shows a way to used the elapsed time to set the TriggeredPin low after TriggeredPinDelay (ms).
+  if (elapsed > TriggeredPinDelay) {
+    digitalWrite(TriggeredPin, LOW);
+    elapsed =- TriggeredPinDelay;
   }
 
   // The reason for doing time based stuff like this rather than just with a function like:
