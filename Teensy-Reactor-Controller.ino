@@ -35,7 +35,7 @@ int StartPinEdge = 1;
 // This is a trivial interrupt handler for the Start Pin. Generally don't put much in here since it blocks Serial communication.
 void StartPinInterrupt() {
   if ((StartPinEdge == 0) && (digitalRead(StartPin) == LOW)) StartPinFlag = true;
-  else if ((StartPinEdge == 1) && (digitalRead(StartPin) == HIGH)) StartPinFlag = false;
+  else if ((StartPinEdge == 1) && (digitalRead(StartPin) == HIGH)) StartPinFlag = true;
 }
 
 void setup() {
