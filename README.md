@@ -1,9 +1,7 @@
 # Teensy-Reactor-Controller
 Library and example for creating a parser for the Teensy to do common Serial control.
 
-It relies upon the std::vector library, but this is not strictly necessary if you are using a more memory constrained device like the traditional Arduino. In that case you can replace the vectors with either dynamic or a static length char* array for argv and manually pass argc, but doing it with full vectors made the code a bit easier to follow for me. To compile for the Arduino Due, it should be possible by just replacing elapsedMillis with a long and manually checking millis().
-
-For any device using this library, the command ListCommands sent over serial will provide a list of the registered commands along with the descriptions provided.
+It relies upon the std::vector library, but this is not strictly necessary if you are using a more memory constrained device like the traditional Arduino. In that case you can replace the vectors with either dynamic or a static length char* array for argv and manually pass argc, but doing it with full vectors made the code a bit easier to follow for me. Should also work with Arduino ARM based chips where there is an implemented vector library, but untested.
 
 ## Library Usage:
 
@@ -27,15 +25,19 @@ I recommend having these at the bottom of the code and to use a formal prototype
 
 Anywhere, you must define a function to tell it what to do when there is a match. In this function there are four special functions which you can use to populate local variables from the arguments in the command string sent to evaluateCommand().
 
-#### floatArg(int i, float* var_ptr)
+##### floatArg(int i, float* var_ptr)
 
-Converts the i-th argument into a float (if valid) and puts it into the pointer var_ptr. It checks that the argument number is valid, that the command has an argument that matches the number, and is a valid float. Invalid floats cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
+Converts the i-th argument into a float (if valid) and puts it into the pointer var_ptr. It checks that the argument number is valid and is a valid float. Invalid floats or argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
 
-#### intArg(int i, int* var_ptr) and stringArg(int i, String* var_ptr)
+##### intArg(int i, int* var_ptr)
 
-Same as floatArg for ints and String variable types. stringArg returns a String object, not a char*.
+Converts the i-th argument into an int (if valid) and puts it into the pointer var_ptr. It checks that the argument number is valid and is a valid int. Invalid ints or argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
 
-#### numArgs()
+#####stringArg(int i, String* var_ptr)
+
+Converts the i-th argument into a String (if valid) and puts it into the pointer var_ptr. It checks that the argument number is valid, but all arguments start as valid String objects so there is no possibility of an invalid String to String conversion. Invalid argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
+
+##### numArgs()
 
 Returns the total number of arguments, not including the command itself. i.e. if you send evaluateCommand("SetPurge 1") and then in the registered function you ask numArgs() it will return 1. This allows you to check for a fully properly formatted string with no extra parameters that shouldn't be there.
 
@@ -62,6 +64,9 @@ Takes a given commandstring and passes it to the parser to search for a matching
 My recommended method for capturing and parsing serial data is shown in the example, and is:
 
 ```
+std::vector<char> commandstring;
+
+void loop() {
   while (Serial.available() > 0) {
     char incomingByte = Serial.read();
     
@@ -102,11 +107,10 @@ My recommended method for capturing and parsing serial data is shown in the exam
       Serial.write(incomingByte);
     }
   }
+}
 ```
 
 placed inside the main loop. You will need the global character vector defined outside as in the example code.
-
-    std::vector<char> commandstring;
 
 I use here a char vector instead of String to make it faster and give access to push_back and pop_back along with clear which aren't present in String but provide quick methods for appending single characters. It also lets me have arbitrarily long strings, limited only by the device RAM. The library itself relies on the vector library being available for your platform, so this adds no additional requirements. However, this variable length data does introduce the possibility of crashing the device if you try to send it too much data without clearing it via carriage return or newline.
 
