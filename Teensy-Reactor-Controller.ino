@@ -61,62 +61,16 @@ void setup() {
 
 elapsedMillis elapsed;
 
-// For now, I'm going to try using a vector of chars instead of a std::string to see if it
-// works well. Doing this using String objects and concatenate causes reliability
-// issues for unclear reasons, but possibly too much overhead.
-
-std::vector<char> commandstring;
-
 void loop() {
-  // This checks for serial commands and sends them for evaluation when a carriage return comes in.
-  // evaluateCommand() expects a string to parse, which it will do by splitting at every space. As such,
+  // This checks for serial commands and sends them for evaluation when a carriage return or newline comes in.
+  //
+  // checkSerial() expects a string to parse, which it will do by splitting at every space. As such,
   // like with UNIX, you cannot have a command with a space in it. Something like:
   // "Purge Valve 0" would be read as the command "Purge" followed by arguments "Valve" and "0" which
   // is probably not what you want. This formulation below ends strings with a carriage return, character
   // code 0x0D.
   
-  while (Serial.available() > 0) {
-    char incomingByte = Serial.read();
-    
-    // If the byte is a carriage return or newline (since I can't guarantee which if either will come
-    // first), then send the command previously read to evaluateCommand() and clear the commandstring
-    // buffer. This has the convenient effect of rendering irrelevant whether LabView or other such
-    // GUI sends something reasonable for a termination character, as long as it sends *something*.
-    
-    if ((incomingByte == 0x0D) || (incomingByte == 0x0A)) {
-
-      // This tests that there's a string to return in the buffer. If not, ignore. This is both
-      // to avoid testing when it's an empty command, and also to deal with sequential CR/NL that
-      // can happen with some GUIs sending serial data.
-      
-      if (commandstring.size() != 0) {
-        // Append the termination character to the command string.
-        commandstring.push_back('\0');
-  
-        // Write a newline to clean up echoing.
-        Serial.write(0x0D);
-        Serial.write(0x0A);
-  
-        // Evaluate the data.
-        evaluateCommand(commandstring.data());
-      }
-      commandstring.clear();
-    }
-
-    // If the byte is a backspace, remove the previously appended char if the length is non-zero.
-    else if (incomingByte == 0x7F) {
-      if (commandstring.size() > 0) {
-        commandstring.pop_back();
-        Serial.write(0x7F);
-      }
-    }
-    
-    // If the byte is not a carriage return, and is a normal ASCII character, put it onto the commandstring.
-    else if ((incomingByte >= 0x20) && (incomingByte <=0x7E)) {
-      commandstring.push_back(incomingByte);
-      Serial.write(incomingByte);
-    }
-  }
+  checkSerial();
 
   // The main loop should check for any flags, and do any actions which should be done based on time delays.
   // For instance, here I'm checking for the StartPinFlag which tells me if I should run something based on

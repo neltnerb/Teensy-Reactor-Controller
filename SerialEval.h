@@ -19,4 +19,5 @@ int _parse_float(std::vector<String> argv, int i, float *flt);
 int _parse_int(std::vector<String> argv, int i, int *num);
 int _parse_string(std::vector<String> argv, int i, String *str);
 void registerCommand(String name, handler_t *handler, String description);
-void evaluateCommand(String commandstring);
+//void evaluateCommand(String commandstring);
+void checkSerial(void);
