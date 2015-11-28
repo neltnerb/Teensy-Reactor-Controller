@@ -47,11 +47,14 @@ void setup() {
   
   // Activate the USB Serial Port.
   Serial.begin(9600);
-  Serial.setTimeout(10);
 
   // Configure PurgePin as a digital output.
   pinMode(PurgePin, OUTPUT);
   digitalWrite(PurgePin, LOW);
+
+  // Configure TriggeredPin as a digital output.
+  pinMode(TriggeredPin, OUTPUT);
+  digitalWrite(TriggeredPin, LOW);
 
   // Configure the StartPin as an input with the pullup resistor active, and create an interrupt
   // handler so that on a change to the value of the pin it will call StartPinInterrupt().
