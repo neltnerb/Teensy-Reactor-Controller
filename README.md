@@ -9,11 +9,7 @@ This version assumes you're using Serial as your port. Future idea to make this 
 
 ### command(name)
 
-creates a command, under the hood creating the function:
-
-    static void name(std::vector<String> argv)
-
-In this library, argv is a vector of Strings representing space separated arguments. You should never be directly calling name(), and instead call it through the checkSerial() function.
+Creates a command function, similar to an interrupt handler, which is called by the checkSerial() command when it receives a matching serial command.
 
 Use this by creating the section:
 
@@ -22,6 +18,21 @@ Use this by creating the section:
       }
 
 I recommend having these at the bottom of the code and to use a formal prototype at the top due to the added benefit of having a single compact list of all of the commands registered to the interface. But you can do it either way, it's just a function definition that needs to happen before registerCommand() in the file.
+
+Under the hood, this creates a functioned named "name", so you cannot use the chosen name for any other functions. i.e. Do *not* do:
+
+```
+command(echo) {
+  int value = intArg(1);
+  echo(value);
+  }
+
+void echo(int value) {
+  Serial.println("Received the integer value " + String(value));
+  }
+```
+
+because although it looks like a function called "command" calling a function "echo" in reality it's a function "echo" trying to call a second defined function "echo".
 
 #### Special Functions inside of a command block
 
