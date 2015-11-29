@@ -5,10 +5,13 @@
 #include <limits.h>
 #include <vector>
 
-// Expects argv to be present, handled by the command macro when defining a command.
-#define floatArg(i, var_ptr)  do { if (-1 == _parse_float(argv, i, var_ptr)) return; } while (0)
-#define intArg(i, var_ptr)  do { if (-1 == _parse_int(argv, i, var_ptr)) return; } while (0)
-#define stringArg(i, var_ptr)  do { if (-1 == _parse_string(argv, i, var_ptr)) return; } while (0)
+// Expects argv to be present, handled by the command macro when defining a command. Uses a GCC
+// expression (https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html) to appear to return a
+// value despite it being a macro.
+
+#define floatArg(i)  ({ float var_ptr; if (-1 == _parse_float(argv, i, &var_ptr)) return; var_ptr; })
+#define intArg(i)  ({ int var_ptr; if (-1 == _parse_int(argv, i, &var_ptr)) return; var_ptr; })
+#define stringArg(i)  ({ String var_ptr; if (-1 == _parse_string(argv, i, &var_ptr)) return; var_ptr; })
 #define numArgs() (argv.size()-1)
 
 #define command(name)  static void name(std::vector<String> argv)

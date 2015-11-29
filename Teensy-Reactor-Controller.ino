@@ -124,17 +124,14 @@ command(setPurge) {
     return;
   }
   
-  // Create a place to put the argument into a real value.
-  int PurgeValveState;
-
   // Collect the first argument to the Command sent over Serial, convert to int, and put into PurgeValveState.
   // intArg, floatArg, and stringArg are special functions that automatically have access to the argument
   // strings received and which will break out of the command if the value can't be parsed. So, if this
   // function fails to properly convert the argument to an int due to it not existing or being improperly
-  // formatted, the
-  // if(PurgeValveState == 0) digitalWrite(PurgePin, LOW);
-  // and other subsequent lines do not get called.
-  intArg(1, &PurgeValveState);
+  // formatted, the "if(PurgeValveState == 0) digitalWrite(PurgePin, LOW);" and other subsequent lines do
+  // not get called.
+  
+  int PurgeValveState = intArg(1);
 
   // Based on the argument to the Serial command, change the ValvePin output.
   if (PurgeValveState == 0) {
@@ -149,4 +146,3 @@ command(setPurge) {
   // and if the argument isn't 0 or 1, return an error.
   else Serial.println("ERROR: Purge valve state invalid (must be 0 or 1).");
 }
-
