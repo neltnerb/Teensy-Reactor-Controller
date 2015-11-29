@@ -19,7 +19,7 @@ Use this by creating the section:
 
 I recommend having these at the bottom of the code and to use a formal prototype at the top due to the added benefit of having a single compact list of all of the commands registered to the interface. But you can do it either way, it's just a function definition that needs to happen before registerCommand() in the file.
 
-Under the hood, this creates a functioned named "name", so you cannot use the chosen name for any other functions. i.e. **Do not do**:
+Under the hood, this creates a function named "name", so you cannot use the chosen name for any other functions. i.e. **Do not do**:
 
 ```
 command(echo) {
