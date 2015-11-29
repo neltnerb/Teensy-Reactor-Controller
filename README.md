@@ -51,7 +51,7 @@ command(echo) {
 
 command(multiecho) {
   int NumberOfArguments = numArgs();
-  int Values[NumberOfArguments-1];
+  int Values[NumberOfArguments];
   
   // Note that I first parse all of the ints before using them.
   // This is recommended to ensure that all values are valid
