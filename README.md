@@ -15,24 +15,43 @@ Use this by creating the section:
 
     command(name) {
       <Code to Execute>
-      }
+    }
 
 I recommend having these at the bottom of the code and to use a formal prototype at the top due to the added benefit of having a single compact list of all of the commands registered to the interface. But you can do it either way, it's just a function definition that needs to happen before registerCommand() in the file.
 
-Under the hood, this creates a functioned named "name", so you cannot use the chosen name for any other functions. i.e. Do *not* do:
+Under the hood, this creates a functioned named "name", so you cannot use the chosen name for any other functions. i.e. **Do not do**:
 
 ```
 command(echo) {
-  int value = intArg(1);
-  echo(value);
-  }
+  int Value = intArg(1);
+  echo(Value);
+}
 
-void echo(int value) {
-  Serial.println("Received the integer value " + String(value));
-  }
+void echo(int Value) {
+  Serial.println("Received the integer value " + String(Value));
+}
 ```
 
 because although it looks like a function called "command" calling a function "echo" in reality it's a function "echo" trying to call a second defined function "echo".
+
+If you want to do this kind of thing where you have a helper function callable from (for instance) multiple commands, just give the helper function a different name from any command.
+
+**Do do this -- different name for helper function than any command:**
+```
+command(echo) {
+  int Value = intArg(1);
+  printval(Value);
+}
+
+command(multiecho) {
+  int NumberOfArguments = numArgs();
+  for (int i = 1; i <= NumberOfArguments; i++) printval(intArg(i));
+}
+
+void printval(int Value) {
+  Serial.println("Received the integer value " + String(Value));
+}
+```
 
 #### Special Functions inside of a command block
 
