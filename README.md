@@ -5,6 +5,12 @@ It relies upon the std::vector library, but this is not strictly necessary if yo
 
 This version assumes you're using Serial as your port. Future idea to make this possible to change so that you can use other USARTs.
 
+In general philosophy, this is intended to parallel the usage of interrupt handlers -- the Serial command is automatically read, triggers an "interrupt" that calls the specified command (but without blocking, so as to allow further Serial reception to occur while parsing), and the only major difference is that the commands have the special power of reading arguments from the thing that triggered the interrupt.
+
+In design philosphy, it is designed to be **extremely defensive**. If the end user types invalid commands, it should not execute any code other than to tell the user that their command was invalid. By example of where this is really important, say you have a command SetPurge which accepts either a 0 or a 1 to indicate on or off. If the end user doesn't read the manual you give them, and tries to do "SetPurge ON", the normal String.toInt() function would return -- zero. Not an error, but zero. So you'd end up setting some valve to off when the user intended it to be on.
+
+These errors are pernicious, hard to anticipate, and so this library works to make it so that everything is checked always and if there is anything unexpected to warn the end user and not execute potentially dangerously misinterpreted commands. It may not be as ideal as anticipating every user error and guessing what they meant, but it puts the burden on the end user to actually send proper commands as you expected them to be sent rather than on you to guess what they'll do wrong.
+
 ## Library Usage:
 
 ### command(name)
@@ -45,13 +51,27 @@ command(echo) {
 
 command(multiecho) {
   int NumberOfArguments = numArgs();
-  for (int i = 1; i <= NumberOfArguments; i++) printval(intArg(i));
+  int Values[NumberOfArguments-1];
+  
+  // Note that I first parse all of the ints before using them.
+  // This is recommended to ensure that all values are valid
+  // before starting to work with them.
+  for (int i = 1; i <= NumberOfArguments; i++) Values[i] = intArg(i);
+
+  // And then actually use them.
+  for (int i = 0; i < NumberOfArguments; i++) printval(Values[i]);
 }
 
 void printval(int Value) {
   Serial.println("Received the integer value " + String(Value));
 }
 ```
+
+Observe also that I demonstrate how to pull all the arguments into the function through the parser before attempting to work with them. In this example, if any of the arguments **aren't** valid ints, it will return an error saying that the offending argument was invalid whereas if you just did:
+
+    for (int i = 1; i <= NumberOfArguments; i++) printval(intArg(i));
+
+it would printval for the arguments up until it sees the invalid one. I think in most cases the behavior where none of the actual function work is done unless *all* arguments used are valid first is preferred to prevent end user errors that are hard to predict from breaking anything important.
 
 #### Special Functions inside of a command block
 
