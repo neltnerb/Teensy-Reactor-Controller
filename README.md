@@ -7,7 +7,7 @@ This version assumes you're using Serial as your port. Future idea to make this 
 
 In general philosophy, this is intended to parallel the usage of interrupt handlers -- the Serial command is automatically read, triggers an "interrupt" that calls the specified command (but without blocking, so as to allow further Serial reception to occur while parsing), and the only major difference is that the commands have the special power of reading arguments from the thing that triggered the interrupt.
 
-In design philosphy, it is designed to be **extremely defensive**. If the end user types invalid commands, it should not execute any code other than to tell the user that their command was invalid. By example of where this is really important, say you have a command SetPurge which accepts either a 0 or a 1 to indicate on or off. If the end user doesn't read the manual you give them, and tries to do "SetPurge ON", the normal String.toInt() function would return -- zero. Not an error, but zero. So you'd end up setting some valve to off when the user intended it to be on.
+In design philosphy, it is designed to be **extremely defensive**. If the end user types invalid commands, it should not execute any code other than to tell the user that their command was invalid. By example of where this is really important, say you have a command SetPurge which accepts either a 0 or a 1 to indicate on or off. If the end user doesn't read the manual you give them, and tries to do "SetPurge ON", the normal string.toInt() function would return -- zero. Not an error, but zero. So you'd end up setting some valve to off when the user intended it to be on.
 
 These errors are pernicious, hard to anticipate, and so this library works to make it so that everything is checked always and if there is anything unexpected to warn the end user and not execute potentially dangerously misinterpreted commands. It may not be as ideal as anticipating every user error and guessing what they meant, but it puts the burden on the end user to actually send proper commands as you expected them to be sent rather than on you to guess what they'll do wrong.
 
@@ -34,7 +34,7 @@ command(echo) {
 }
 
 void echo(int Value) {
-  Serial.println("Received the integer value " + String(Value));
+  Serial.println("Received the integer value " + string(Value));
 }
 ```
 
@@ -63,7 +63,7 @@ command(multiecho) {
 }
 
 void printval(int Value) {
-  Serial.println("Received the integer value " + String(Value));
+  Serial.println("Received the integer value " + string(Value));
 }
 ```
 
@@ -85,15 +85,15 @@ Converts the i-th argument into a float (if valid) and returns. For an invalid c
 
 Converts the i-th argument into an int (if valid) and returns. For an invalid conversion, this special function will break out of the main command, so do this at the beginning of a command function to check all of the variable conversions before doing work on them. It checks that the argument number is valid and is a valid float. Invalid ints or argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
 
-##### String stringArg(int i)
+##### string stringArg(int i)
 
-Converts the i-th argument into a String (if valid) and returns. For an invalid conversion, this special function will break out of the main command, so do this at the beginning of a command function to check all of the variable conversions before doing work on them. It checks that the argument number is valid, but all arguments start as valid String objects so there is no possibility of an invalid String to String conversion. Invalid argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
+Converts the i-th argument into a string (if valid) and returns. For an invalid conversion, this special function will break out of the main command, so do this at the beginning of a command function to check all of the variable conversions before doing work on them. It checks that the argument number is valid, but all arguments start as valid string objects so there is no possibility of an invalid string to string conversion. Invalid argument numbers cause the function to return immediately, printing error messages to the Serial port for debugging either the code error or the command error.
 
 ##### int numArgs()
 
 Returns the total number of arguments, not including the command itself. i.e. if you send "SetPurge 1" over serial, and then in the registered function you ask numArgs() it will return 1. This allows you to check for a fully properly formatted string with no extra parameters that shouldn't be there.
 
-### void registerCommand(String name, function* name, String description);
+### void registerCommand(string name, function* name, string description);
 
 In the setup section, you must register each command with (for example):
 
